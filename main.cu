@@ -3,7 +3,7 @@
 #include <random>
 #include <chrono>
 
-void calculateSquare(int array_length, int reach, int central_i, int central_j, float **a, float **c);
+void calculateSquare(int array_length, int reach, int central_i, int central_j, float *data_array, float *out_array);
 
 double generateRandomFloat(float min_value, float max_value)
 {
@@ -15,19 +15,20 @@ double generateRandomFloat(float min_value, float max_value)
     return dist(gen);
 }
 
-void printArray(int array_length, float **array)
+void printArray(int array_length, float *array)
 {
     for(int i {0}; i < array_length; i++)
     {
+
         for(int j {0}; j < array_length; j++)
         {
-            std::cout << array[i][j] << ", ";
+            std::cout << array[(array_length * i) + j] << ", ";
         }
         std::cout << std::endl;
     }
 }
 
-void populateArray(int array_length, float **array, bool zero)
+void populateArray(int array_length, float *array, bool zero)
 {
     for(int i {0}; i < array_length; i++)
     {
@@ -36,39 +37,28 @@ void populateArray(int array_length, float **array, bool zero)
             if(!zero)
             {
                 //array[i][j] = generateRandomFloat(1.0f, 100.0f);
-                array[i][j] = 1;
+                array[(array_length * i) + j] = 1;
             }else
             {
-                array[i][j] = 0;
+                array[(array_length * i) + j] = 0;
             }
 
         }
     }
 }
 
-float** initArray(int array_length, float **array)
-{
-    array = new float *[array_length];
-    for(int i {0}; i < array_length; i++)
-    {
-        array[i] = new float[array_length];
-    }
-
-    return array;
-}
-
-void calculateAnswer(int array_length, int reach, float **a, float **c)
+void calculateAnswer(int array_length, int reach, float *data_array, float *out_array)
 {
     for(int i {0}; i < (array_length - (2 * reach)); i++)
     {
         for(int j {0}; j < (array_length - (2 * reach)); j++)
         {
-            calculateSquare(array_length, reach, i, j, a, c);
+            calculateSquare(array_length, reach, i, j, data_array, out_array);
         }
     }
 }
 
-void calculateSquare(int array_length, int reach, int central_i, int central_j, float **a, float **c)
+void calculateSquare(int array_length, int reach, int central_i, int central_j, float *data_array, float *out_array)
 {
     int upper_left_index_j {0};
     int upper_left_index_i {0};
@@ -105,7 +95,7 @@ void calculateSquare(int array_length, int reach, int central_i, int central_j, 
     {
         for(int j {upper_left_index_j}; j < right_edge; j++)
         {
-            c[central_i][central_j] += a[i][j];
+            out_array[(central_i * (array_length - (2 * reach))) + central_j] += data_array[(i * array_length) + j];
         }
     }
 }
@@ -114,16 +104,17 @@ int main()
 {
     int array_length {10};
     int reach {2};
-    float **a, **c;
-    a = initArray(array_length, a);
-    c = initArray(array_length - (2 * reach), c);
-    populateArray(array_length, a, false);
-    populateArray(array_length - (2 * reach), c, true);
-    printArray(array_length, a);
-    calculateAnswer(array_length, reach, a, c);
+
+    auto *data_array = new float[array_length * array_length];
+    auto *out_array = new float[(array_length - (2 * reach)) * (array_length - (2 * reach))];
+    populateArray(array_length, data_array, false);
+    populateArray(array_length - (2 * reach), out_array, true);
+    printArray(array_length, data_array);
+    calculateAnswer(array_length, reach, data_array, out_array);
     std::cout << "ANSWER" << std::endl;
-    printArray(array_length - (2 * reach), c);
-    delete a;
-    delete c;
+    printArray(array_length - (2 * reach), out_array);
+
+    delete[] data_array;
+    delete[] out_array;
     return 0;
 }
