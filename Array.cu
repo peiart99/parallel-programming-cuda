@@ -30,3 +30,8 @@ void populateArray(int array_length, float *array, bool debug)
         }
     }
 }
+
+void compareArrays(int array_length, float *a, float *b)
+{
+    //implement this
+}
