@@ -31,7 +31,16 @@ void populateArray(int array_length, float *array, bool debug)
     }
 }
 
-void compareArrays(int array_length, float *a, float *b)
+int compareArrays(int array_length, float *a, float *b)
 {
-    //implement this
+    int conflicts {0};
+    for(int i {0}; i < array_length * array_length; i++)
+    {
+        if(a[i] != b[i])
+        {
+            conflicts++;
+        }
+    }
+
+    return conflicts;
 }

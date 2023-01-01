@@ -23,15 +23,20 @@ void calculateSquare(int array_length, int reach, int central_i, int central_j, 
     }
 }
 
-__global__ void deviceCalculateAnswer(int array_length, int reach, float *data_array, float *out_array)
+__global__ void deviceCalculateAnswer(int array_length, int reach, int elements_per_thread, float *data_array, float *out_array)
 {
-    int tid = threadIdx.x;
+    int tid = threadIdx.x * elements_per_thread;
     int bid = threadIdx.y;
-    for(int i {bid}; i < 2 * reach + 1 + bid; i++)
+    for(int k {0}; k < elements_per_thread; k++)
     {
-        for(int j {tid}; j < 2 * reach + 1 + tid; j++)
+        for(int i {bid}; i < 2 * reach + 1 + bid; i++)
         {
-            out_array[(bid * (array_length - (2 * reach))) + tid] += data_array[(i * array_length) + j];
+            for(int j {tid}; j < 2 * reach + 1 + tid; j++)
+            {
+                out_array[(bid * (array_length - (2 * reach))) + tid] += data_array[(i * array_length) + j];
+            }
         }
+        tid++;
     }
+
 }
