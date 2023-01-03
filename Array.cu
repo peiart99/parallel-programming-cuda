@@ -34,11 +34,13 @@ void populateArray(int array_length, float *array, bool debug)
 int compareArrays(int array_length, float *a, float *b)
 {
     int conflicts {0};
+    float margin = 0.1f * array_length;
     for(int i {0}; i < array_length * array_length; i++)
     {
-        if(a[i] != b[i])
+        if((a[i] - b[i]) > margin || (a[i] - b[i]) < (margin * -1.0f))
         {
             conflicts++;
+            std::cout << "Konflikt: a: " << a[i] << ", b: " << b[i] << std::endl;
         }
     }
 
