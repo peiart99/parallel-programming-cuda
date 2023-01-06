@@ -23,21 +23,68 @@ void calculateSquare(int array_length, int reach, int central_i, int central_j, 
     }
 }
 
-__global__ void deviceCalculateAnswer(int array_length, int reach, int elements_per_thread, float *data_array, float *out_array)
+__global__ void deviceCalculateAnswer(int array_length, int reach, int elements_per_thread, int block_size, float *data_array, float *out_array)
 {
-    int tid = threadIdx.x * elements_per_thread;
-    int bid = threadIdx.y;
-    for(int k {0}; k < elements_per_thread; k++)
+    int k_length = ((block_size * elements_per_thread) / 2) + (blockIdx.y * block_size * elements_per_thread);
+    int d_i = threadIdx.y + (blockIdx.y * block_size * (elements_per_thread / 2));
+    int d_j = threadIdx.x + (blockIdx.x * block_size * (elements_per_thread / 2));
+    for(int k_i {0}; k_i < elements_per_thread; k_i++)
     {
-        for(int i {bid}; i < 2 * reach + 1 + bid; i++)
-        {
-            for(int j {tid}; j < 2 * reach + 1 + tid; j++)
+        //d_i = threadIdx.y + (blockIdx.y * block_size * elements_per_thread) + (block_size * k_i);
+            //d_j = threadIdx.x + (blockIdx.x * block_size * elements_per_thread) + (block_size * k_i);
+            //printf("Starting indices: [%d][%d]\n", d_i, d_j);
+            for(int i {d_i}; i < 2 * reach + 1 + d_i; i++)
             {
-                out_array[(bid * (array_length - (2 * reach))) + tid] += data_array[(i * array_length) + j];
+                for(int j {d_j}; j < 2 * reach + 1 + d_j; j++)
+                {
+                    out_array[(d_i * (array_length - (2 * reach))) + d_j] += data_array[(i * array_length) + j];
+                }
             }
-        }
-        tid++;
+            //printf("Saving into [%d][%d] from thr: [%d][%d] blck: [%d][%d] iter %d\n", d_i, d_j, threadIdx.y, threadIdx.x, blockIdx.y, blockIdx.x, k_i);
+
+            if(k_i < ((elements_per_thread / 2) - 1))
+            {
+                d_i += block_size;
+            }else if (k_i == ((elements_per_thread / 2) - 1))
+            {
+                d_i = threadIdx.y + (blockIdx.y * block_size * (elements_per_thread / 2));
+                d_j += block_size;
+            }else if(k_i > ((elements_per_thread / 2) - 1))
+            {
+                d_i += block_size;
+                //d_j += block_size;
+            }
+
+//        if(d_i + block_size <= k_length)
+//        {
+//            d_i += block_size;
+//        }else
+//        {
+//            d_i = threadIdx.y + (blockIdx.y * block_size * (elements_per_thread / 2));
+//            if(d_j + block_size <= k_length)
+//            {
+//                d_j += block_size;
+//            }else
+//            {
+//                d_j = threadIdx.x + (blockIdx.x * block_size * (elements_per_thread / 2));
+//            }
+//        }
+
     }
+
+//    int tid = threadIdx.x * elements_per_thread;
+//    int bid = threadIdx.y;
+//    for(int k {0}; k < elements_per_thread; k++)
+//    {
+//        for(int i {bid}; i < 2 * reach + 1 + bid; i++)
+//        {
+//            for(int j {tid}; j < 2 * reach + 1 + tid; j++)
+//            {
+//                out_array[(bid * (array_length - (2 * reach))) + tid] += data_array[(i * array_length) + j];
+//            }
+//        }
+//        tid++;
+//    }
 
 }
 
@@ -97,4 +144,11 @@ __global__ void deviceCalculateAnswer_shared(int array_length, int reach, int el
         tid++;
     }
 
+}
+
+__global__ void testKernel(int bsize)
+{
+    int t_i = threadIdx.y + (blockIdx.y * bsize);
+    int t_j = threadIdx.x + (blockIdx.x * bsize);
+    printf("Block [%d][%d], thread [%d][%d]\n", blockIdx.y, blockIdx.x,t_i, t_j);
 }

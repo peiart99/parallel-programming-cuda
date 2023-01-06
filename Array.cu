@@ -35,14 +35,16 @@ int compareArrays(int array_length, float *a, float *b)
 {
     int conflicts {0};
     float margin = 0.1f * array_length;
-    for(int i {0}; i < array_length * array_length; i++)
+    for(int i {0}; i < array_length; i++)
+    for(int j {0}; j < array_length; j++)
     {
-        if((a[i] - b[i]) > margin || (a[i] - b[i]) < (margin * -1.0f))
+        if((a[(i * array_length) + j] - b[(i * array_length) + j]) > margin || (a[(i * array_length) + j] - b[(i * array_length) + j]) < (margin * -1.0f))
         {
             conflicts++;
-            std::cout << "Konflikt: a: " << a[i] << ", b: " << b[i] << std::endl;
+            std::cout << std::setprecision(5) <<std::fixed <<"Konflikt: a[" << i << "][" << j << "]: " << a[(i * array_length) + j] << ", b[" << i << "][" << j << "]: " << b[(i * array_length) + j] << std::endl;
+
+            std::setprecision(std::cout.precision());
         }
     }
-
     return conflicts;
 }
