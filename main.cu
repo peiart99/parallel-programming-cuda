@@ -25,7 +25,7 @@ void calculate(int array_length, int reach, int elements_per_thread, int data_mo
     std::cout << "ANSWER CALCULATED IN " << std::chrono::duration_cast<std::chrono::microseconds>(stop_cpu - start_cpu).count() << "us" << std::endl;
     //printArray(array_length - (2 * reach), out_array);
     // define the dimensions of the grid and thread blocks
-    int BS {8};
+    int BS {16};
     int divisor {1};
     dim3 threads_per_block(BS,BS);
     if(elements_per_thread > 1)
@@ -67,7 +67,7 @@ int main()
 {
     int array_length {100};
     int reach {34};
-    int elements_per_thread {4};
+    int elements_per_thread {1};
     auto *data_array = new float[array_length * array_length];
     auto *out_array = new float[(array_length - (2 * reach)) * (array_length - (2 * reach))];
     auto *out_array_device_global_mem = new float[(array_length - (2 * reach)) * (array_length - (2 * reach))];

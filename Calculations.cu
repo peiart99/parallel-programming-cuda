@@ -25,9 +25,14 @@ void calculateSquare(int array_length, int reach, int central_i, int central_j, 
 
 __global__ void deviceCalculateAnswer(int array_length, int reach, int elements_per_thread, int block_size, float *data_array, float *out_array)
 {
-    int k_length = ((block_size * elements_per_thread) / 2) + (blockIdx.y * block_size * elements_per_thread);
-    int d_i = threadIdx.y + (blockIdx.y * block_size * (elements_per_thread / 2));
-    int d_j = threadIdx.x + (blockIdx.x * block_size * (elements_per_thread / 2));
+
+    int k_multiplier {1};
+    if(elements_per_thread > 1)
+    {
+        k_multiplier = elements_per_thread / 2;
+    }
+    int d_i = threadIdx.y + (blockIdx.y * block_size * k_multiplier);
+    int d_j = threadIdx.x + (blockIdx.x * block_size * k_multiplier);
     for(int k_i {0}; k_i < elements_per_thread; k_i++)
     {
         //d_i = threadIdx.y + (blockIdx.y * block_size * elements_per_thread) + (block_size * k_i);
@@ -42,14 +47,14 @@ __global__ void deviceCalculateAnswer(int array_length, int reach, int elements_
             }
             //printf("Saving into [%d][%d] from thr: [%d][%d] blck: [%d][%d] iter %d\n", d_i, d_j, threadIdx.y, threadIdx.x, blockIdx.y, blockIdx.x, k_i);
 
-            if(k_i < ((elements_per_thread / 2) - 1))
+            if(k_i < (k_multiplier - 1))
             {
                 d_i += block_size;
-            }else if (k_i == ((elements_per_thread / 2) - 1))
+            }else if (k_i == (k_multiplier - 1))
             {
-                d_i = threadIdx.y + (blockIdx.y * block_size * (elements_per_thread / 2));
+                d_i = threadIdx.y + (blockIdx.y * block_size * k_multiplier);
                 d_j += block_size;
-            }else if(k_i > ((elements_per_thread / 2) - 1))
+            }else if(k_i > (k_multiplier - 1))
             {
                 d_i += block_size;
                 //d_j += block_size;
