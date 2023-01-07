@@ -19,7 +19,7 @@ void calculateSquare(int array_length, int reach, int central_i, int central_j, 
         for(int j {central_j}; j < 2 * reach + 1 + central_j; j++)
         {
             out_array[(central_i * (array_length - (2 * reach))) + central_j] += data_array[(i * array_length) + j];
-            std::cout << "SEKW: Dla OUT[" << central_i << "][" << central_j << "] wartosci: " << data_array[(i * array_length) + j]<< std::endl;
+            //std::cout << "SEKW: Dla OUT[" << central_i << "][" << central_j << "] wartosci: " << data_array[(i * array_length) + j]<< std::endl;
         }
     }
 }
@@ -100,7 +100,7 @@ __global__ void deviceCalculateAnswer_shared(int array_length, int reach, int el
             {
                 goto endloop;
             }
-            shared_data[(i * shared_size) + j] = data_array[((i + shared_start_i) * shared_size) + (j + shared_start_j)];
+            shared_data[(i * shared_size) + j] = data_array[((i + shared_start_i) * array_length) + (j + shared_start_j)];
             //printf("block[%d][%d] = shared[%d][%d] = data[%d][%d]\n",blockIdx.y,blockIdx.x,i,j,(i + shared_start_i), (j + shared_start_j));
 
             counter++;
@@ -123,7 +123,7 @@ __global__ void deviceCalculateAnswer_shared(int array_length, int reach, int el
             {
                 out_array[(d_i * (array_length - (2 * reach))) + d_j] += shared_data[(i * shared_size) + j];
                 counterlol++;
-                printf("SHARED: Dla OUT[%d][%d] wartosci indeks[%d][%d]: %f \n", d_i, d_j,i,j, shared_data[(i * shared_size) + j]);
+                //printf("SHARED: Dla OUT[%d][%d] wartosci indeks[%d][%d]: %f \n", d_i, d_j,i,j, shared_data[(i * shared_size) + j]);
             }
         }
 

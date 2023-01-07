@@ -27,7 +27,7 @@ void calculate(int array_length, int reach, int elements_per_thread, float *data
     std::cout << "ANSWER CALCULATED IN " << std::chrono::duration_cast<std::chrono::microseconds>(stop_cpu - start_cpu).count() << "us" << std::endl;
     //printArray(array_length - (2 * reach), out_array);
     // define the dimensions of the grid and thread blocks
-    int BS {4};
+    int BS {8};
     int divisor {1};
     double data_move_per_thread {std::ceil(static_cast<double>(BS + (divisor * 2 * reach)) * (BS + (divisor * 2 * reach)) / (BS * BS))};
     std::cout << "DATA PER THREAD MOVE: " << data_move_per_thread << std::endl;
@@ -46,11 +46,11 @@ void calculate(int array_length, int reach, int elements_per_thread, float *data
 
     // cuda kernel call
     cudaEventRecord(start);
-    //deviceCalculateAnswer<<<number_of_blocks, threads_per_block>>>(array_length, reach, elements_per_thread, BS, device_data_array, device_out_array);
+    deviceCalculateAnswer<<<number_of_blocks, threads_per_block>>>(array_length, reach, elements_per_thread, BS, device_data_array, device_out_array);
     //testKernel<<<number_of_blocks, threads_per_block>>>(BS);
     //deviceCalculateAnswer_test<<<number_of_blocks, threads_per_block>>>(array_length, reach, elements_per_thread, device_data_array, device_out_array);
 
-    deviceCalculateAnswer_shared<<<number_of_blocks, threads_per_block, ((BS + (divisor * 2 * reach)) * (BS + (divisor * 2 * reach)) * sizeof(float))>>>(array_length, reach, elements_per_thread, BS, (BS + (divisor * 2 * reach)),static_cast<int>(data_move_per_thread) , device_data_array, device_out_array);
+    //deviceCalculateAnswer_shared<<<number_of_blocks, threads_per_block, ((BS + (divisor * 2 * reach)) * (BS + (divisor * 2 * reach)) * sizeof(float))>>>(array_length, reach, elements_per_thread, BS, (BS + (divisor * 2 * reach)),static_cast<int>(data_move_per_thread) , device_data_array, device_out_array);
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
     float milliseconds = 0;
@@ -74,8 +74,8 @@ void calculate(int array_length, int reach, int elements_per_thread, float *data
 
 int main()
 {
-    int array_length {10};
-    int reach {1};
+    int array_length {100};
+    int reach {34};
     int elements_per_thread {1};
     auto *data_array = new float[array_length * array_length];
     auto *out_array = new float[(array_length - (2 * reach)) * (array_length - (2 * reach))];
