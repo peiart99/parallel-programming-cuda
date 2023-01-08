@@ -43,7 +43,7 @@ int compareArrays(int array_length, float *a, float *b)
             conflicts++;
             std::cout << std::setprecision(5) <<std::fixed <<"Konflikt: a[" << i << "][" << j << "]: " << a[(i * array_length) + j] << ", b[" << i << "][" << j << "]: " << b[(i * array_length) + j] << std::endl;
 
-            std::setprecision(std::cout.precision());
+            std::cout << std::setprecision(std::cout.precision());
         }
     }
     return conflicts;

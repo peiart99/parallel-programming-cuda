@@ -4,15 +4,25 @@
 #include "Calculations.h"
 #include <chrono>
 
-void calculate(int array_length, int reach, int elements_per_thread, float *data_array, float *out_array, float *out_array_device_global_mem, float *device_data_array, float *device_out_array, size_t bytes_data, size_t bytes_out)
+void setParameters(int data_array_length, int reach, int block_size, int elements_per_thread)
+{
+    //
+}
+
+void printDeviceInfo(int device_number)
 {
     cudaDeviceProp prop;
-    cudaGetDeviceProperties(&prop, 0);
+    cudaGetDeviceProperties(&prop, device_number);
     std::cout << prop.name << std::endl;
     std::cout << "Compute Capability: " << prop.major << "." << prop.minor << std::endl;
     std::cout << "Multiprocesory (SM): " <<prop.multiProcessorCount << std::endl;
     std::cout << "Maksymalna liczba wątków na blok: " << prop.maxThreadsPerBlock << std::endl;
     std::cout << "Maksymalna liczba bloków na SM: " << prop.maxBlocksPerMultiProcessor << std::endl;
+}
+
+void calculate(int array_length, int reach, int elements_per_thread, float *data_array, float *out_array, float *out_array_device_global_mem, float *device_data_array, float *device_out_array, size_t bytes_data, size_t bytes_out)
+{
+    printDeviceInfo(0);
 
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
@@ -29,28 +39,24 @@ void calculate(int array_length, int reach, int elements_per_thread, float *data
     // define the dimensions of the grid and thread blocks
     int BS {8};
     int divisor {1};
-    double data_move_per_thread {std::ceil(static_cast<double>(BS + (divisor * 2 * reach)) * (BS + (divisor * 2 * reach)) / (BS * BS))};
+    divisor = (elements_per_thread > 1) ? (divisor = elements_per_thread/2) : divisor = 1;
+    double data_move_per_thread {std::ceil(static_cast<double>(((divisor * BS) + (2 * reach)) * ((divisor * BS) + (2 * reach))) / (BS * BS))};
     std::cout << "DATA PER THREAD MOVE: " << data_move_per_thread << std::endl;
     dim3 threads_per_block(BS,BS);
-    if(elements_per_thread > 1)
-    {
-        divisor = (elements_per_thread / 2);
-    }
     dim3 number_of_blocks(((array_length - (2 * reach)) / threads_per_block.x) / divisor, ((array_length - (2 * reach)) / threads_per_block.y) / divisor);
 
     dim3 lol(8,8);
     dim3 lel(2,2);
 
     std::cout << "Blocks: " << number_of_blocks.x << ", " << number_of_blocks.y << std::endl;
-    std::cout << "Shared size: " << ((BS + (divisor * 2 * reach)) * (BS + (divisor * 2 * reach)) * sizeof(float)) / 1000 << " kB" << std::endl;
+    std::cout << "Shared size: " << (((divisor *  BS) + (2 * reach)) * ((divisor * BS) + (2 * reach)) * sizeof(float)) / 1000 << " kB" << std::endl;
 
     // cuda kernel call
     cudaEventRecord(start);
-    deviceCalculateAnswer<<<number_of_blocks, threads_per_block>>>(array_length, reach, elements_per_thread, BS, device_data_array, device_out_array);
-    //testKernel<<<number_of_blocks, threads_per_block>>>(BS);
-    //deviceCalculateAnswer_test<<<number_of_blocks, threads_per_block>>>(array_length, reach, elements_per_thread, device_data_array, device_out_array);
 
-    //deviceCalculateAnswer_shared<<<number_of_blocks, threads_per_block, ((BS + (divisor * 2 * reach)) * (BS + (divisor * 2 * reach)) * sizeof(float))>>>(array_length, reach, elements_per_thread, BS, (BS + (divisor * 2 * reach)),static_cast<int>(data_move_per_thread) , device_data_array, device_out_array);
+    deviceCalculateAnswer<<<number_of_blocks, threads_per_block>>>(array_length, reach, elements_per_thread, BS, device_data_array, device_out_array);
+    //deviceCalculateAnswer_shared<<<number_of_blocks, threads_per_block, (((divisor * BS) + (2 * reach)) * ((divisor * BS) + (2 * reach)) * sizeof(float))>>>(array_length, reach, elements_per_thread, BS, ((divisor * BS) + (2 * reach)),static_cast<int>(data_move_per_thread) , device_data_array, device_out_array);
+
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
     float milliseconds = 0;
@@ -74,9 +80,9 @@ void calculate(int array_length, int reach, int elements_per_thread, float *data
 
 int main()
 {
-    int array_length {100};
-    int reach {34};
-    int elements_per_thread {1};
+    int array_length {156};
+    int reach {46};
+    int elements_per_thread {4};
     auto *data_array = new float[array_length * array_length];
     auto *out_array = new float[(array_length - (2 * reach)) * (array_length - (2 * reach))];
     auto *out_array_device_global_mem = new float[(array_length - (2 * reach)) * (array_length - (2 * reach))];
